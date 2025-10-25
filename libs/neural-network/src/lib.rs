@@ -1,14 +1,52 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
+/* --------------------------------- Neuron --------------------------------- */
+
+#[derive(Debug)]
+struct Neuron {
+    bias: f32,
+    weights: Vec<f32>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+impl Neuron {
+    fn propagate(&self, inputs: &[f32]) -> f32 {
+        assert_eq!(inputs.len(), self.weights.len());
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+        let mut output = inputs
+            .iter()
+            .zip(&self.weights)
+            .map(|(input, weight)| input * weight)
+            .sum::<f32>();
+
+        (output + self.bias).max(0.0) 
+
+    }
+}
+
+/* ---------------------------------- Layer --------------------------------- */
+
+#[derive(Debug)]
+struct Layer {
+    neurons: Vec<Neuron>,
+}
+
+impl Layer {
+    fn propagate(&self, inputs: Vec<f32>) -> Vec<f32> {
+        self.neurons
+            .iter()
+            .map(|neuron| neuron.propagate(&inputs))
+            .collect()
+    }
+}
+
+/* --------------------------------- Network -------------------------------- */
+
+pub struct Network {
+    layers: Vec<Layer>,
+}
+
+impl Network {
+    pub fn propagate(&self, inputs: Vec<f32>) -> Vec<f32> {
+        self.layers
+            .iter()
+            .fold(inputs, |inputs, layer| layer.propagate(inputs))
     }
 }
